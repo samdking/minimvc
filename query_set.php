@@ -84,7 +84,8 @@ class Query_set implements Iterator, ArrayAccess, Countable
 
 	function one()
 	{
-		$this->get_result();
+
+		$this->limit(1)->get_result();
 		$this->result = reset($this->result);
 		return $this->result? $this->result : NULL;
 	}
