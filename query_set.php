@@ -1,6 +1,6 @@
 <?php
 
-class Query_set implements Iterator, ArrayAccess
+class Query_set implements Iterator, ArrayAccess, Countable
 {
 	private $model;
 	private $engine;
@@ -68,6 +68,14 @@ class Query_set implements Iterator, ArrayAccess
         return false !== current($this->result);
     }
 
+    function count()
+	{
+		$this->get_result(); 
+		return count($this->result);
+	}
+
+	/* End required functions */
+
 	function __construct($model)
 	{
 		$this->model = $model;
@@ -76,7 +84,10 @@ class Query_set implements Iterator, ArrayAccess
 
 	function find($value)
 	{
-		$this->engine->select(array('id'=>$value));
+		$this->engine->where(array('id'=>$value));
+		$this->get_result();
+		$this->result = reset($this->result);
+		return $this->result? $this->result : NULL;
 	}
 
 	function first($conditions = array())
