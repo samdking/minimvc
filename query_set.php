@@ -82,6 +82,13 @@ class Query_set implements Iterator, ArrayAccess, Countable
 		$this->engine = $model::engine();
 	}
 
+	function one()
+	{
+		$this->get_result();
+		$this->result = reset($this->result);
+		return $this->result? $this->result : NULL;
+	}
+
 	function find($value)
 	{
 		$this->engine->where(array('id'=>$value));
