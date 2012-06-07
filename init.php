@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Europe/London');
+
 include 'system/sql_classes.php';
 include 'system/query_set.php';
 include 'system/model.php';
