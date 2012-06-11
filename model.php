@@ -73,6 +73,12 @@ class Model
 		static::engine()->update($props, array('id' => $this->id))->execute();
 	}
 
+	function bulk_clear()
+	{
+		static::engine()->truncate()->execute();
+		return $this;
+	}
+
 	function bulk_create($props)
 	{
 		$engine = static::engine();

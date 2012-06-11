@@ -29,6 +29,9 @@ class MySQLEngine extends Engine
 			default:
 				$sql = 'SELECT ' . (isset($this->sql['fields'])? $this->sql['fields'] : '*') . ' FROM ' . $this->sql['table'];
 			break;
+			case 'truncate':
+				$sql = 'TRUNCATE ' . $this->sql['table'];
+			break;
 		}
 		
 		switch ($this->query_type) {
@@ -134,6 +137,12 @@ class MySQLEngine extends Engine
 	function where($conditions)
 	{
 		$this->sql['where'] = $this->params($conditions, ' AND ');
+	}
+
+	function truncate()
+	{
+		$this->query_type = 'truncate';
+		return $this;
 	}
 
 	private function params($params, $join = ', ')
