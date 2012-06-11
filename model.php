@@ -100,7 +100,7 @@ class Model
 		}
 		$this->action('before_write');
 		$this->id = static::engine()->insert($this->properties)->execute()->last_id();
-		return $obj;
+		return $this;
 	}
 
 }
