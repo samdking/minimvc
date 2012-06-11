@@ -19,7 +19,8 @@ class MySQLEngine extends Engine
 	{
 		switch ($this->query_type) {
 			case 'insert':
-				$sql = 'INSERT INTO ' . $this->sql['table'] . ' SET ' . $this->sql['set'];
+				$sql = 'INSERT INTO ' . $this->sql['table'] . ' (' . implode(', ', $this->sql['fields']) . ')';
+				$sql .= ' VALUES ' . implode(', ', $this->sql['values']);
 			break;
 			case 'update':
 				$sql = 'UPDATE ' . $this->sql['table'] . ' SET ' . $this->sql['set'];
@@ -65,7 +66,7 @@ class MySQLEngine extends Engine
 	{
 		$sql = $this->construct_sql();
 		if (DEBUG)
-			echo '<p>' . $sql . '</p>';
+			exit('<p>' . $sql . '</p>');
 		$this->result = $this->handle->query($sql);
 		if ($error = $this->handle->error)
 			throw new Exception($error . ' in ' . $sql);
@@ -99,7 +100,9 @@ class MySQLEngine extends Engine
 
 	function insert($vals)
 	{
-		$this->sql['set'] = $this->params($vals);
+		if (!isset($this->sql['fields']))
+			$this->sql['fields'] = array_keys($vals);
+		$this->sql['values'][] = '(' . $this->params(array_values($vals)) . ')';
 		$this->query_type = 'insert';
 		return $this;
 	}
@@ -138,7 +141,7 @@ class MySQLEngine extends Engine
 		foreach($params as $key=>$val) {
 			if (!is_object($val))
 				$val = new SQLCommand($val);
-			$conditions[] = "`$key` " . $val;
+			$conditions[] = is_int($key)? $val->value() : "`$key` " . $val;
 		}
 		return implode($join, $conditions);
 	}

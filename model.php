@@ -2,9 +2,10 @@
 
 class Model
 {
-	protected $properties;
 	protected static $engine;
-
+	protected $properties;
+	protected $is_factory;
+	
 	function __call($method, $args)
 	{
 		$queryset = $this->query_set();
@@ -29,7 +30,9 @@ class Model
 		$class_name = strpos($model, '_model') === false? $model . '_model' : $model;
 		if (!class_exists($class_name))
 			include dirname(__FILE__) . '/../app/models/' . $class_name . '.php';
-		return new $class_name;
+		$factory = new $class_name;
+		$factory->is_factory = true;
+		return $factory;
 	}
 
 	static function engine()
@@ -37,6 +40,14 @@ class Model
 		$engine = Engine::get('mysql');
 		$engine->from(static::$db_table);
 		return $engine;
+	}
+
+	function action($method)
+	{
+		$params = func_get_args();
+		array_shift($params);
+		if (method_exists($this, $method))
+			call_user_func_array(array($this, $method), $params);
 	}
 
 	function query_set()
@@ -54,7 +65,7 @@ class Model
 		if ($this->id)
 			$this->update($this->properties);
 		else
-			$this->create($this->properties);
+			$this->create();
 	}
 
 	function update($props)
@@ -62,11 +73,27 @@ class Model
 		static::engine()->update($props, array('id' => $this->id))->execute();
 	}
 
-	function create($props)
+	function bulk_create($props)
 	{
-		$props['id'] = static::engine()->insert($props)->execute()->last_id();
-		$obj = new $this;
-		$obj->populate($props);
+		$engine = static::engine();
+		foreach($props as $row) {
+			$obj = new $this;
+			$obj->populate($row);
+			$obj->action('before_write');
+			$engine->insert($obj->properties);
+		}
+		$engine->execute();
+	}
+
+	function create($props = false)
+	{
+		if ($this->is_factory) {
+			$obj = new $this;
+			$obj->populate($props);
+			return $obj->create();
+		}
+		$this->action('before_write');
+		$this->id = static::engine()->insert($this->properties)->execute()->last_id();
 		return $obj;
 	}
 

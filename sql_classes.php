@@ -21,9 +21,10 @@ class SQLCommand
 		return $this->operator . ' ' . $this->value($this->value);	
 	}
 
-	function value($value)
+	function value($value = false)
 	{
-		$val = is_string($value) || empty($value)? "'" . $value . "'" : $value;
+		$value = $value? $value : $this->value;
+		$val = !is_numeric($value) || empty($value)? "'" . $value . "'" : $value;
 		return $val;
 	}
 }
