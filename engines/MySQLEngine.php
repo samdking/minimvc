@@ -20,38 +20,29 @@ class MySQLEngine extends Engine
 		switch ($this->query_type) {
 			case 'insert':
 				$sql = 'INSERT INTO ' . $this->sql['table'] . ' (' . implode(', ', $this->sql['fields']) . ')';
-				$sql .= ' VALUES ' . implode(', ', $this->sql['values']);
+				$sql.= ' VALUES ' . implode(', ', $this->sql['values']);
 			break;
 			case 'update':
 				$sql = 'UPDATE ' . $this->sql['table'] . ' SET ' . $this->sql['set'];
 			break;
 			case 'select':
 			default:
-				$sql = 'SELECT ' . (isset($this->sql['fields'])? $this->sql['fields'] : '*') . ' FROM ' . $this->sql['table'];
+				$sql = 'SELECT ' . (isset($this->sql['fields'])? $this->sql['fields'] : '*');
+				$sql.= ' FROM ' . $this->sql['table'];
 			break;
 			case 'truncate':
 				$sql = 'TRUNCATE ' . $this->sql['table'];
 			break;
 		}
 		
-		switch ($this->query_type) {
-			case 'update':
-			case 'select':
-			default:
-				if (isset($this->sql['where']))
-					$sql .= ' WHERE ' . $this->sql['where'];
-			break;
-		}
-		
-		switch ($this->query_type) {
-			case 'select':
-			default:
-				if (isset($this->sql['order']))
-					$sql .= ' ORDER BY ' . $this->sql['order'];
-				if (isset($this->sql['limit']))
-					$sql .= ' LIMIT ' . $this->sql['limit'];
-			break;
-		}
+		if (isset($this->sql['where']))
+			$sql .= ' WHERE ' . $this->sql['where'];
+
+		if (isset($this->sql['order']))
+			$sql .= ' ORDER BY ' . $this->sql['order'];
+
+		if (isset($this->sql['limit']))
+			$sql .= ' LIMIT ' . $this->sql['limit'];
 
 		return $sql;
 	}
