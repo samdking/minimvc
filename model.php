@@ -86,6 +86,12 @@ class Model
 		static::engine()->execute();
 	}
 
+	function delete()
+	{
+		static::engine()->delete(array('id' => $this->id))->execute();
+		return $this;
+	}
+
 	function create($props, $execute = true)
 	{
 		$obj = new $this;
