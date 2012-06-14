@@ -37,7 +37,7 @@ class Model
 
 	static function engine()
 	{
-		$engine = Engine::get('mysql');
+		$engine = Engine::get('MySQL');
 		$engine->from(static::$db_table);
 		return $engine;
 	}
