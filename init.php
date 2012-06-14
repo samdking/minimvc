@@ -1,5 +1,6 @@
 <?php
 
+session_start();
 date_default_timezone_set('Europe/London');
 
 include 'system/sql_classes.php';
