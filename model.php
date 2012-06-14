@@ -63,14 +63,18 @@ class Model
 	function save($execute = true)
 	{
 		$this->action('before_write');
-		$engine = static::engine();
 		if ($this->id)
-			$engine->update($this->properties, array('id' => $this->id))->execute();
+			$this->update($this->properties);
 		else
-			$engine->insert($this->properties);
-		if ($execute && !$this->id)
-			$this->id = $engine->execute()->last_id();
+			$e = static::engine()->insert($this->properties);
+		if ($execute && isset($e))
+			$this->id = $e->execute()->last_id();
 		return $this;
+	}
+
+	function update($props)
+	{
+		static::engine()->update($props, array('id' => $this->id))->execute();
 	}
 
 	function bulk_clear()
