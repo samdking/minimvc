@@ -60,17 +60,17 @@ class Model
 		$this->properties = $props;
 	}
 
-	function save()
+	function save($execute = true)
 	{
+		$this->action('before_write');
+		$engine = static::engine();
 		if ($this->id)
-			$this->update($this->properties);
+			$engine->update($this->properties, array('id' => $this->id))->execute();
 		else
-			$this->create();
-	}
-
-	function update($props)
-	{
-		static::engine()->update($props, array('id' => $this->id))->execute();
+			$engine->insert($this->properties);
+		if ($execute && !$this->id)
+			$this->id = $engine->execute()->last_id();
+		return $this;
 	}
 
 	function bulk_clear()
@@ -81,26 +81,22 @@ class Model
 
 	function bulk_create($props)
 	{
-		$engine = static::engine();
-		foreach($props as $row) {
-			$obj = new $this;
-			$obj->populate($row);
-			$obj->action('before_write');
-			$engine->insert($obj->properties);
-		}
-		$engine->execute();
+		foreach($props as $row)
+			$this->create($row, false);
+		static::engine()->execute();
 	}
 
-	function create($props = false)
+	function delete()
 	{
-		if ($this->is_factory) {
-			$obj = new $this;
-			$obj->populate($props);
-			return $obj->create();
-		}
-		$this->action('before_write');
-		$this->id = static::engine()->insert($this->properties)->execute()->last_id();
+		static::engine()->delete(array('id' => $this->id))->execute();
 		return $this;
+	}
+
+	function create($props, $execute = true)
+	{
+		$obj = new $this;
+		$obj->populate($props);
+		return $obj->save($execute);
 	}
 
 }
