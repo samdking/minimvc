@@ -12,7 +12,7 @@ class Engine
 	{
 		$class_name = $type . 'Engine';
 		if (!class_exists($class_name))
-			include 'engines/' . $class_name . '.php';
+			include dirname(__FILE__) . '/engines/' . $class_name . '.php';
 		return new $class_name;
 	}
 }
