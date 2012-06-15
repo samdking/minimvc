@@ -2,10 +2,11 @@
 
 class Model
 {
-	protected static $engine;
+	protected static $engine = 'MySQL';
+	protected static $db_table;
 	protected $properties;
 	protected $is_factory;
-	
+
 	function __call($method, $args)
 	{
 		$queryset = $this->query_set();
@@ -37,9 +38,11 @@ class Model
 
 	static function engine()
 	{
-		$engine = Engine::get('MySQL');
-		$engine->from(static::$db_table);
-		return $engine;
+		if (!is_object(static::$engine)) {
+			static::$engine = Engine::get(static::$engine);
+			static::$engine->from(static::$db_table);
+		}
+		return static::$engine;
 	}
 
 	function action($method)
@@ -60,10 +63,10 @@ class Model
 		$this->properties = $props;
 	}
 
-	function save($execute = true)
+	function save($execute = true, $force_insert = false)
 	{
 		$this->action('before_write');
-		if ($this->id)
+		if ($this->id && !$force_insert)
 			$this->update($this->properties);
 		else
 			$e = static::engine()->insert($this->properties);
@@ -100,7 +103,7 @@ class Model
 	{
 		$obj = new $this;
 		$obj->populate($props);
-		return $obj->save($execute);
+		return $obj->save($execute, true);
 	}
 
 }
