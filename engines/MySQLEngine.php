@@ -60,7 +60,7 @@ class MySQLEngine extends Engine
 	{
 		$sql = $this->construct_sql();
 		if (DEBUG)
-			exit('<p>' . $sql . '</p>');
+			echo('<p>' . $sql . '</p>');
 		$this->result = $this->handle->query($sql);
 		if ($error = $this->handle->error)
 			throw new Exception($error . ' in ' . $sql);
