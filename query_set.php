@@ -10,7 +10,7 @@ class Query_set implements Iterator, ArrayAccess, Countable
 	function get_result()
 	{
 		if (!$this->result)
-			$this->result = $this->make_objects($this->engine->result());
+			return $this->result = $this->make_objects($this->engine->result());
 	}
 
 	function offsetExists($key)
@@ -150,6 +150,11 @@ class Query_set implements Iterator, ArrayAccess, Countable
 		if (!empty($where))
 			$this->engine->where($where);
 		return $this;
+	}
+
+	function all()
+	{
+		return $this->get_result();
 	}
 
 	function values($fields)
