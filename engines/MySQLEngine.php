@@ -42,7 +42,7 @@ class MySQLEngine extends Engine
 			$sql .= ' ORDER BY ' . $this->sql['order'];
 
 		if (isset($this->sql['limit']))
-			$sql .= ' LIMIT ' . $this->sql['limit'];
+			$sql .= ' LIMIT ' . $this->sql['offset'] . ', ' . $this->sql['limit'];
 
 		return $sql;
 	}
@@ -76,11 +76,13 @@ class MySQLEngine extends Engine
 	function from($value)
 	{
 		$this->sql['table'] = $value;
+		return $this;
 	}
 
 	function limit($val)
 	{
-		$this->sql['limit'] = isset($this->sql['limit'])? $this->sql['limit'] . ', ' . $val : $val;
+		$this->sql['offset'] = isset($this->sql['offset'])? $this->sql['offset'] : 0;
+		$this->sql['limit'] = $val;
 	}
 
 	function order($val)
@@ -90,7 +92,7 @@ class MySQLEngine extends Engine
 
 	function offset($val)
 	{
-		$this->sql['limit'] = isset($this->sql['limit'])? $val . ', ' . $this->sql['limit'] : $val;
+		$this->sql['offset'] = $val;
 	}
 
 	function insert($vals)
