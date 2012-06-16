@@ -12,3 +12,9 @@ function parse_args($args)
 	else
 		return $args;
 }
+
+function redirect($uri)
+{
+	header('location: ' . $uri);
+	exit;
+}
