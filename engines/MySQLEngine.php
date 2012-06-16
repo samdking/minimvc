@@ -19,19 +19,19 @@ class MySQLEngine extends Engine
 	{
 		switch ($this->query_type) {
 			case 'insert':
-				$sql = 'INSERT INTO ' . $this->sql['table'] . ' (' . implode(', ', $this->sql['fields']) . ')';
+				$sql = 'INSERT INTO `' . $this->sql['table'] . '` (' . implode(', ', $this->sql['fields']) . ')';
 				$sql.= ' VALUES ' . implode(', ', $this->sql['values']);
 			break;
 			case 'update':
-				$sql = 'UPDATE ' . $this->sql['table'] . ' SET ' . $this->sql['set'];
+				$sql = 'UPDATE `' . $this->sql['table'] . '` SET ' . $this->sql['set'];
 			break;
 			case 'select':
 			default:
 				$sql = 'SELECT ' . (isset($this->sql['fields'])? $this->sql['fields'] : '*');
-				$sql.= ' FROM ' . $this->sql['table'];
+				$sql.= ' FROM `' . $this->sql['table'] . '`';
 			break;
 			case 'truncate':
-				$sql = 'TRUNCATE ' . $this->sql['table'];
+				$sql = 'TRUNCATE `' . $this->sql['table'] . '`';
 			break;
 		}
 		
