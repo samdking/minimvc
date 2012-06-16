@@ -13,7 +13,7 @@ class SQLCommand
 
 	function __construct($value = false)
 	{
-		$this->value = mysql_real_escape_string($value);
+		$this->value = $value;
 	}
 
 	function __tostring()
@@ -24,6 +24,7 @@ class SQLCommand
 	function value($value = false)
 	{
 		$value = $value? $value : $this->value;
+		$value = mysql_real_escape_string($value);
 		$val = !is_numeric($value) || empty($value)? "'" . $value . "'" : $value;
 		return $val;
 	}
