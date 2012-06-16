@@ -47,11 +47,12 @@ class MySQLEngine extends Engine
 		return $sql;
 	}
 
-	function result()
+	function result($fetch_object = false)
 	{
 		$this->execute();
+		$func = $fetch_object? 'fetch_object' : 'fetch_assoc';
 		if (is_object($this->result))
-			while($row = $this->result->fetch_assoc())
+			while($row = $this->result->$func())
 				$data[] = $row;
 		return isset($data)? $data : array();
 	}
@@ -105,7 +106,7 @@ class MySQLEngine extends Engine
 	{
 		$this->sql['set'] = $this->params($vals);
 		if ($conditions)
-			$this->sql['where'] = $this->params($conditions);
+			$this->sql['where'] = $this->params($conditions, ' AND ');
 		$this->query_type = 'update';
 		return $this;
 	}
@@ -118,16 +119,17 @@ class MySQLEngine extends Engine
 
 	function select($values)
 	{
-		if (func_get_args() > 1)
-			$values = func_get_args();
+		$values = parse_args(func_get_args());
 		foreach((array)$values as $v)
 			$fields[] = '`' . $v . '`';
 		$this->sql['fields'] = implode(', ', $fields);
+		return $this;
 	}
 
 	function where($conditions)
 	{
 		$this->sql['where'] = $this->params($conditions, ' AND ');
+		return $this;
 	}
 
 	function truncate()

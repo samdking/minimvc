@@ -9,8 +9,9 @@ class Query_set implements Iterator, ArrayAccess, Countable
 
 	function get_result()
 	{
-		if (!$this->result)
-			return $this->result = $this->make_objects($this->engine->result());
+		if (is_null($this->result))
+			$this->result = $this->make_objects($this->engine->result());
+		return $this->result;
 	}
 
 	function offsetExists($key)
@@ -159,16 +160,31 @@ class Query_set implements Iterator, ArrayAccess, Countable
 
 	function values($fields)
 	{
-		$this->engine->select($fields);
-		$result = $this->engine->result();
+		$fields = parse_args(func_get_args());
+
+		if (is_null($this->result)) // haven't got result yet? Great, optimise
+			$result = $this->engine->select($fields)->result(true);
+		else // otherwise, use existing
+			$result = $this->result;
+
 		$array = array();
 		foreach($result as $i=>$row)
 			if (is_array($fields))
 				foreach($fields as $field)
-					$array[$i][$field] = $row[$field];
+					$array[$i][$field] = $row->$field;
 			else
-				$array[$i] = $row[$fields];
-		$this->result = $array;
+				$array[$i] = $row->$fields;
+
+		if (is_null($this->result))
+			$this->result = $array;
+
 		return $array;
+	}
+
+	function update($values)
+	{
+		$ids = $this->values('id');
+		if (!empty($ids))
+			$this->engine->update($values, array('id'=>new OneOf($ids)))->execute();
 	}
 }
