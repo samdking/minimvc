@@ -12,6 +12,8 @@ class MySQLEngine extends Engine
 	{
 		global $db;
 		$this->handle = new mysqli($db['server'], $db['user'], $db['pass'], $db['name']);
+		if ($this->handle->connect_error)
+	 		exit('Connect Error (' . $this->handle->connect_errno . ') ' . $this->handle->connect_error);
 		$this->handle->set_charset("utf8");
 	}
 
@@ -65,6 +67,10 @@ class MySQLEngine extends Engine
 		$this->result = $this->handle->query($sql);
 		if ($error = $this->handle->error)
 			throw new Exception($error . ' in ' . $sql);
+		$table = $this->sql['table'];
+		$this->sql = array();
+		if ($table)
+			$this->sql['table'] = $table;
 		return $this;
 	}
 

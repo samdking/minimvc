@@ -2,10 +2,17 @@
 
 class Model
 {
-	protected static $engine = 'MySQL';
+	protected static $default_engine = 'MySQL';
 	protected static $db_table;
 	protected $properties;
 	protected $is_factory;
+	public $engine;
+
+	function __construct()
+	{
+		$this->engine = Engine::get(static::$default_engine);
+		$this->engine->from(static::$db_table);
+	}
 
 	function __call($method, $args)
 	{
@@ -36,15 +43,6 @@ class Model
 		return $factory;
 	}
 
-	static function engine()
-	{
-		if (!is_object(static::$engine)) {
-			static::$engine = Engine::get(static::$engine);
-			static::$engine->from(static::$db_table);
-		}
-		return static::$engine;
-	}
-
 	function action($method)
 	{
 		$params = func_get_args();
@@ -55,7 +53,7 @@ class Model
 
 	function query_set()
 	{
-		return new Query_set(get_class($this));
+		return new Query_set($this);
 	}
 
 	function populate($props)
@@ -69,7 +67,7 @@ class Model
 		if ($this->id && !$force_insert)
 			$this->update($this->properties);
 		else
-			$e = static::engine()->insert($this->properties);
+			$e = $this->engine->insert($this->properties);
 		if ($execute && isset($e))
 			$this->id = $e->execute()->last_id();
 		return $this;
@@ -77,12 +75,12 @@ class Model
 
 	function update($props)
 	{
-		static::engine()->update($props, array('id' => $this->id))->execute();
+		$this->engine->update($props, array('id' => $this->id))->execute();
 	}
 
 	function bulk_clear()
 	{
-		static::engine()->truncate()->execute();
+		$this->engine->truncate()->execute();
 		return $this;
 	}
 
@@ -90,12 +88,12 @@ class Model
 	{
 		foreach($props as $row)
 			$this->create($row, false);
-		static::engine()->execute();
+		$this->engine->execute();
 	}
 
 	function delete()
 	{
-		static::engine()->delete(array('id' => $this->id))->execute();
+		$this->engine->delete(array('id' => $this->id))->execute();
 		return $this;
 	}
 

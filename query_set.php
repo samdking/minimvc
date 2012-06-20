@@ -79,8 +79,8 @@ class Query_set implements Iterator, ArrayAccess, Countable
 
 	function __construct($model)
 	{
-		$this->model = $model;
-		$this->engine = $model::engine();
+		$this->model = get_class($model);
+		$this->engine = $model->engine;
 	}
 
 	function one()
