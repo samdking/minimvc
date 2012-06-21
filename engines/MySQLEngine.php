@@ -3,18 +3,15 @@
 class MySQLEngine extends Engine
 {
 
+	static $driver_type = 'mysqli';
+	private $driver;
 	private $sql = array();
 	private $query_type;
-	private $handle;
-	private $result;
 
 	function init()
 	{
-		global $db;
-		$this->handle = new mysqli($db['server'], $db['user'], $db['pass'], $db['name']);
-		if ($this->handle->connect_error)
-	 		exit('Connect Error (' . $this->handle->connect_errno . ') ' . $this->handle->connect_error);
-		$this->handle->set_charset("utf8");
+		$this->driver = DB_driver::get(static::$driver_type);
+		$this->driver->connect();
 	}
 
 	private function construct_sql()
@@ -52,11 +49,7 @@ class MySQLEngine extends Engine
 	function result($fetch_object = false)
 	{
 		$this->execute();
-		$func = $fetch_object? 'fetch_object' : 'fetch_assoc';
-		if (is_object($this->result))
-			while($row = $this->result->$func())
-				$data[] = $row;
-		return isset($data)? $data : array();
+		return $this->driver->result($fetch_object);
 	}
 
 	function execute()
@@ -64,8 +57,8 @@ class MySQLEngine extends Engine
 		$sql = $this->construct_sql();
 		if (DEBUG)
 			echo('<p>' . $sql . '</p>');
-		$this->result = $this->handle->query($sql);
-		if ($error = $this->handle->error)
+		$this->driver->query($sql);
+		if ($error = $this->driver->error())
 			throw new Exception($error . ' in ' . $sql);
 		$table = $this->sql['table'];
 		$this->sql = array();
@@ -76,7 +69,7 @@ class MySQLEngine extends Engine
 
 	function last_id()
 	{
-		return $this->handle->insert_id;
+		return $this->driver->insert_id();
 	}
 
 	function from($value)
