@@ -8,9 +8,9 @@ class Model
 	protected $is_factory;
 	public $engine;
 
-	function __construct()
+	function __construct($engine = false)
 	{
-		$this->engine = Engine::get(static::$default_engine);
+		$this->engine = $engine? $engine : Engine::get(static::$default_engine);
 		$this->engine->from(static::$db_table);
 	}
 
@@ -99,7 +99,7 @@ class Model
 
 	function create($props, $execute = true)
 	{
-		$obj = new $this;
+		$obj = new $this($execute? false : $this->engine);
 		$obj->populate($props);
 		return $obj->save($execute, true);
 	}
