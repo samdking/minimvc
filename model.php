@@ -5,7 +5,7 @@ class Model
 	protected static $default_engine = 'MySQL';
 	protected static $db_table;
 	protected $properties;
-	protected $is_factory;
+	protected $is_factory = false;
 	public $engine;
 
 	function __construct($engine = false)
