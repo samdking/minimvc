@@ -3,14 +3,14 @@
 class MySQLEngine extends Engine
 {
 
-	static $driver_type = 'mysqli';
 	private $driver;
 	private $sql = array();
 	private $query_type;
 
 	function init()
 	{
-		$this->driver = DB_driver::get(static::$driver_type);
+		global $db;
+		$this->driver = DB_driver::get($db['type']);
 		$this->driver->connect();
 	}
 
