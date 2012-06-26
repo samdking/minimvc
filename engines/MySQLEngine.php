@@ -149,3 +149,27 @@ class MySQLEngine extends Engine
 		return implode($join, $conditions);
 	}
 }
+
+class SQLCommand
+{
+	protected $value;
+	protected $operator = '=';
+
+	function __construct($value = false)
+	{
+		$this->value = $value;
+	}
+
+	function __tostring()
+	{
+		return $this->operator . ' ' . $this->value($this->value);	
+	}
+
+	function value($value = false)
+	{
+		$value = $value? $value : $this->value;
+		$value = $this->driver->escape($value);
+		$val = !is_numeric($value) || empty($value)? "'" . $value . "'" : $value;
+		return $val;
+	}
+}
