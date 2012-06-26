@@ -173,3 +173,5 @@ class SQLCommand
 		return $val;
 	}
 }
+
+include '../sql_classes.php';
