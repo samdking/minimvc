@@ -47,4 +47,9 @@ class Mysqli_db_driver extends DB_driver
 	{
 		return $this->handle->insert_id;
 	}
+
+	function escape($value)
+	{
+		return $this->handle->real_escape_string($value);
+	}
 }

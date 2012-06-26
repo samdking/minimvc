@@ -34,4 +34,9 @@ class Mysql_db_driver extends DB_driver
 	{
 		return mysql_insert_id();
 	}
+
+	function escape($value)
+	{
+		return mysql_real_escape_string($value);
+	}
 }
