@@ -2,7 +2,6 @@
 
 class MySQLEngine extends Engine
 {
-
 	private $driver;
 	private $sql = array();
 	private $query_type;
@@ -11,7 +10,6 @@ class MySQLEngine extends Engine
 	{
 		global $db;
 		$this->driver = DB_driver::get($db['type']);
-		$this->driver->connect();
 	}
 
 	private function construct_sql()
@@ -20,6 +18,7 @@ class MySQLEngine extends Engine
 			case 'insert':
 				$sql = 'INSERT INTO `' . $this->sql['table'] . '` (' . implode(', ', $this->sql['fields']) . ')';
 				$sql.= ' VALUES ' . implode(', ', $this->sql['values']);
+				return $sql;
 			break;
 			case 'update':
 				$sql = 'UPDATE `' . $this->sql['table'] . '` SET ' . $this->sql['set'];
@@ -35,7 +34,7 @@ class MySQLEngine extends Engine
 		}
 		
 		if (isset($this->sql['where']))
-			$sql .= ' WHERE ' . $this->sql['where'];
+			$sql .= ' WHERE ' . $this->params($this->sql['where'], ' AND ');
 
 		if (isset($this->sql['order']))
 			$sql .= ' ORDER BY ' . $this->sql['order'];
@@ -60,10 +59,6 @@ class MySQLEngine extends Engine
 		$this->driver->query($sql);
 		if ($error = $this->driver->error())
 			throw new Exception($error . ' in ' . $sql);
-		$table = $this->sql['table'];
-		$this->sql = array();
-		if ($table)
-			$this->sql['table'] = $table;
 		return $this;
 	}
 
@@ -94,8 +89,9 @@ class MySQLEngine extends Engine
 		$this->sql['offset'] = $val;
 	}
 
-	function insert($vals)
+	function insert($vals = array())
 	{
+		$vals = $vals? $vals : (array)@$this->sql['where'];
 		if (!isset($this->sql['fields']))
 			$this->sql['fields'] = array_keys($vals);
 		$this->sql['values'][] = '(' . $this->params(array_values($vals)) . ')';
@@ -103,19 +99,19 @@ class MySQLEngine extends Engine
 		return $this;
 	}
 
-	function update($vals, $conditions = false)
+	function update($vals)
 	{
 		$this->sql['set'] = $this->params($vals);
-		if ($conditions)
-			$this->sql['where'] = $this->params($conditions, ' AND ');
 		$this->query_type = 'update';
+		$this->execute();
 		return $this;
 	}
 
-	function delete($conditions)
+	function delete()
 	{
-		$this->sql['where'] = $this->params($conditions);
 		$this->query_type = 'delete';
+		$this->execute();
+		return $this;
 	}
 
 	function select($values)
@@ -129,13 +125,14 @@ class MySQLEngine extends Engine
 
 	function where($conditions)
 	{
-		$this->sql['where'] = $this->params($conditions, ' AND ');
+		$this->sql['where'] = $conditions;
 		return $this;
 	}
 
 	function truncate()
 	{
 		$this->query_type = 'truncate';
+		$this->execute();
 		return $this;
 	}
 
@@ -149,29 +146,3 @@ class MySQLEngine extends Engine
 		return implode($join, $conditions);
 	}
 }
-
-class SQLCommand
-{
-	protected $value;
-	protected $operator = '=';
-
-	function __construct($value = false)
-	{
-		$this->value = $value;
-	}
-
-	function __tostring()
-	{
-		return $this->operator . ' ' . $this->value($this->value);	
-	}
-
-	function value($value = false)
-	{
-		$value = $value? $value : $this->value;
-		$value = $this->driver->escape($value);
-		$val = !is_numeric($value) || empty($value)? "'" . $value . "'" : $value;
-		return $val;
-	}
-}
-
-include '../sql_classes.php';
