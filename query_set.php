@@ -3,15 +3,16 @@
 class Query_set implements Iterator, ArrayAccess, Countable
 {
 	private $model;
-	private $engine;
+	public $engine;
 	private $single_result = false;
 	private $result;
 
-	function get_result()
+	function get_result($refresh = false, $single = false)
 	{
-		if (is_null($this->result))
-			$this->result = $this->make_objects($this->engine->result());
-		return $this->result;
+		if (!is_null($this->result) && !$refresh)
+			return $this->result;
+		$r = $this->make_objects($this->engine->result());
+		return $this->result = $single? reset($r) : $r;
 	}
 
 	function offsetExists($key)
@@ -80,37 +81,45 @@ class Query_set implements Iterator, ArrayAccess, Countable
 	function __construct($model)
 	{
 		$this->model = get_class($model);
-		$this->engine = $model->engine;
+		$this->init();
+	}
+
+	function __clone()
+	{
+		$this->init();
+	}
+
+	function init()
+	{
+		$class = $this->model;
+		$this->result = NULL;
+		$this->engine = Engine::get($class::$engine);
+		$this->engine->from($class::$db_table);
 	}
 
 	function one()
 	{
-
-		$this->limit(1)->get_result();
-		$this->result = reset($this->result);
-		return $this->result? $this->result : NULL;
+		$this->limit(1)->get_result(false, true);
+		return $this->result? $this->result : false;
 	}
 
 	function find($value)
 	{
 		$this->engine->where(array('id'=>$value));
-		$this->get_result();
-		$this->result = reset($this->result);
-		return $this->result? $this->result : NULL;
+		$this->get_result(false, true);
+		return $this->result? $this->result : false;
 	}
 
-	function first($conditions = array())
+	function first()
 	{
-		$this->filter($conditions)->limit(1)->get_result();
-		$this->result = reset($this->result);
-		return $this->result? $this->result : NULL;
+		$this->limit(1)->get_result(false, true);
+		return $this->result? $this->result : false;
 	}
 
-	function last($conditions = array())
+	function last()
 	{
-		$this->filter($conditions)->limit(1)->order('id desc')->get_result();
-		$this->result = reset($this->result);
-		return $this->result? $this->result : NULL;
+		$this->limit(1)->order('id desc')->get_result(false, true);
+		return $this->result? $this->result : false;
 	}
 
 	function make_objects($arr)
@@ -131,13 +140,12 @@ class Query_set implements Iterator, ArrayAccess, Countable
 		return $this;
 	}
 
-	function first_or_create($params)
+	function first_or_create()
 	{
-		$obj = $this->filter($params)->first();
-		if (!$obj) {
-			$obj = Model::get($this->model)->create($params);
-		}
-		return $obj;
+		if ($obj = $this->first())
+			return $obj;
+		$new = clone $this;
+		return $new->find($this->engine->insert()->execute()->last_id());
 	}
 
 	function limit($params)
@@ -181,10 +189,29 @@ class Query_set implements Iterator, ArrayAccess, Countable
 		return $array;
 	}
 
+	function insert($values = array())
+	{
+		$this->engine->insert($values);
+		return $this;
+	}
+
 	function update($values)
 	{
-		$ids = $this->values('id');
-		if (!empty($ids))
-			$this->engine->update($values, array('id'=>new OneOf($ids)))->execute();
+		$this->engine->update($values);
+		return $this;
+	}
+
+	function delete()
+	{
+		$this->engine->delete();
+		return $this;
+	}
+
+	function bulk_clear()
+	{
+		$this->engine->truncate();
+		return $this;
 	}
 }
+
+include dirname(__FILE__) . '/sql_classes.php';

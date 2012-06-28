@@ -2,17 +2,10 @@
 
 class Model
 {
-	protected static $default_engine = 'MySQL';
-	protected static $db_table;
+	static $db_table;
+	static $engine = 'MySQL';
 	protected $properties;
 	protected $is_factory = false;
-	public $engine;
-
-	function __construct($engine = false)
-	{
-		$this->engine = $engine? $engine : Engine::get(static::$default_engine);
-		$this->engine->from(static::$db_table);
-	}
 
 	function __call($method, $args)
 	{
@@ -61,47 +54,41 @@ class Model
 		$this->properties = $props;
 	}
 
-	function save($execute = true, $force_insert = false)
+	function save($force_insert = false)
 	{
+		$query = $this->query_set();
 		$this->action('before_write');
 		if ($this->id && !$force_insert)
 			$this->update($this->properties);
 		else
-			$e = $this->engine->insert($this->properties);
-		if ($execute && isset($e))
-			$this->id = $e->execute()->last_id();
+			$this->id = $query->insert($this->properties)->engine->execute()->last_id();
 		return $this;
 	}
 
 	function update($props)
 	{
-		$this->engine->update($props, array('id' => $this->id))->execute();
-	}
-
-	function bulk_clear()
-	{
-		$this->engine->truncate()->execute();
-		return $this;
+		$this->query_set()->filter(array('id' => $this->id))->update($props);
 	}
 
 	function bulk_create($props)
 	{
+		$query = $this->query_set();
 		foreach($props as $row)
-			$this->create($row, false);
-		$this->engine->execute();
+			$query->insert($row);
+		$query->engine->execute();
 	}
 
 	function delete()
 	{
-		$this->engine->delete(array('id' => $this->id))->execute();
+		$this->query_set()->filter(array('id' => $this->id))->delete();
 		return $this;
 	}
 
-	function create($props, $execute = true)
+	function create($props)
 	{
-		$obj = new $this($execute? false : $this->engine);
+		$obj = new $this;
 		$obj->populate($props);
-		return $obj->save($execute, true);
+		return $obj->save(true);
 	}
 
 }
