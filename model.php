@@ -3,7 +3,7 @@
 class Model
 {
 	static $db_table;
-	static $engine = 'MySQL';
+	static $engine = 'sql';
 	protected $properties;
 	protected $is_factory = false;
 

@@ -1,6 +1,6 @@
 <?php
 
-class MySQLEngine extends Engine
+class SQL_Engine extends Engine
 {
 	private $driver;
 	private $sql = array();
