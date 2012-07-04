@@ -30,7 +30,7 @@ abstract class SQLCommand
 
 	function input($args)
 	{
-		return count($args) > 1? $args : (is_array($args[0])? $args[0] : $args[0]);
+		return count($args) > 1? $args : $args[0];
 	}
 
 	function output()

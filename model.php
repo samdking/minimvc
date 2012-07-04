@@ -31,6 +31,7 @@ class Model
 		$class_name = strpos($model, '_model') === false? $model . '_model' : $model;
 		if (!class_exists($class_name))
 			include dirname(__FILE__) . '/../app/models/' . $class_name . '.php';
+		Engine::load($class_name::$engine);
 		$factory = new $class_name;
 		$factory->is_factory = true;
 		return $factory;

@@ -213,5 +213,3 @@ class Query_set implements Iterator, ArrayAccess, Countable
 		return $this;
 	}
 }
-
-include dirname(__FILE__) . '/sql_classes.php';

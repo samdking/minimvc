@@ -1,5 +1,8 @@
 <?php
 
+include __DIR__ . '/db_driver.php';
+include __DIR__ . '/commands.php';
+
 class SQL_Engine extends Engine
 {
 	private $driver;
