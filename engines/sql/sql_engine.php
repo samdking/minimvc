@@ -108,7 +108,7 @@ class SQL_Engine extends Engine
 	function update($vals)
 	{
 		$this->sql['set'] = $vals;
-		$this->params = array_merge($this->s($vals), $this->params);
+		$this->params = array_merge($this->get_params($vals), $this->params);
 		$this->query_type = 'update';
 		$this->execute();
 		return $this;
