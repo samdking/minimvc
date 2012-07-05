@@ -28,13 +28,19 @@ class Model
 
 	static function get($model)
 	{
-		$class_name = strpos($model, '_model') === false? $model . '_model' : $model;
-		if (!class_exists($class_name))
-			include dirname(__FILE__) . '/../app/models/' . $class_name . '.php';
-		Engine::load($class_name::$engine);
+		$class_name = self::load($model);
 		$factory = new $class_name;
 		$factory->is_factory = true;
 		return $factory;
+	}
+
+	static function load($model)
+	{
+		$class_name = $model . '_Model';
+		if (!class_exists($class_name))
+			include APP_PATH . 'models/'. $model . '_model.php';
+		Engine::load($class_name::$engine);
+		return $class_name;
 	}
 
 	function action($method)
@@ -92,4 +98,8 @@ class Model
 		return $obj->save(true);
 	}
 
+	function belongs_to($rel)
+	{
+
+	}
 }
