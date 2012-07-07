@@ -89,6 +89,11 @@ class Query_set implements Iterator, ArrayAccess, Countable
 		$this->init();
 	}
 
+	function get()
+	{
+		return $this->get_result();
+	}
+
 	function init()
 	{
 		$class = $this->model;

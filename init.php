@@ -3,24 +3,27 @@
 session_start();
 date_default_timezone_set('Europe/London');
 
-define('APP_PATH', __DIR__ . '/../app/');
+define('APP_PATH', realpath( __DIR__ . '/../app') . '/');
+define('SYS_PATH', __DIR__ . '/');
 
 include 'system/autoloader.php';
-include 'system/functions.php';
 
 spl_autoload_register(array('Autoloader', 'get'));
-
-if (!file_exists('system/config.php'))
-	error('No config file exists');
-
-include 'system/config.php';
 
 Autoloader::define(array(
 	'Query_set' => 'query_set.php',
 	'Model' => 'model.php',
 	'Engine' => 'engine.php',
 	'Route' => 'route.php',
-	'Controller' => 'controller.php'
+	'Controller' => 'controller.php',
+	'View' => 'view.php'
 ));
 
-include APP_PATH . 'routing.php';
+Autoloader::system(array(
+	'functions.php',
+));
+
+Autoloader::app(array(
+	'routing.php',
+	'config.php'
+));
